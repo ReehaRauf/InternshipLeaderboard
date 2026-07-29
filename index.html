@@ -89,6 +89,43 @@
   footer{text-align:center; margin-top:18px; color:var(--text-faint); font-family:var(--mono); font-size:11.5px;}
   footer .sym{color:var(--green);}
 
+  /* modal */
+  .modal-overlay{
+    display:none; position:fixed; inset:0; background:rgba(5,7,10,0.72);
+    align-items:center; justify-content:center; padding:20px; z-index:100;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:var(--surface); border:1px solid var(--border); border-radius:14px;
+    max-width:560px; width:100%; max-height:85vh; overflow-y:auto;
+    padding:28px 26px 22px; position:relative;
+    box-shadow:0 30px 80px -20px rgba(0,0,0,0.7);
+  }
+  .modal-close{
+    position:absolute; top:14px; right:16px; background:transparent; border:0;
+    color:var(--text-dim); font-size:22px; line-height:1; cursor:pointer; padding:4px 8px;
+    border-radius:6px;
+  }
+  .modal-close:hover{color:var(--text); background:var(--row-hover);}
+  .modal-close:focus-visible{outline:2px solid var(--blue); outline-offset:2px;}
+  .modal-head{display:flex; align-items:center; gap:12px; margin-bottom:18px; padding-right:20px;}
+  .modal-head h2{font-family:var(--sans); font-size:20px; font-weight:800; margin:0; color:var(--text);}
+  .modal-stats{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px;
+  }
+  .mstat{background:var(--bg); border:1px solid var(--border-soft); border-radius:10px; padding:10px 8px; text-align:center;}
+  .mval{font-family:var(--mono); font-weight:700; font-size:16px; color:var(--green);}
+  .mlbl{font-family:var(--mono); font-size:9.5px; color:var(--text-dim); margin-top:2px;}
+  @media (max-width:480px){ .modal-stats{grid-template-columns:repeat(2,1fr);} }
+  .quiz-table{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:12.5px;}
+  .quiz-table th{
+    text-align:left; color:var(--text-dim); font-weight:600; font-size:10.5px;
+    padding:6px 8px; border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--surface);
+  }
+  .quiz-table td{padding:7px 8px; border-bottom:1px solid var(--border-soft); color:var(--text);}
+  .quiz-table tr.missed td{color:var(--text-faint);}
+  .quiz-table .score-cell{text-align:right; font-weight:600;}
+
   @media (max-width:560px){
     .meta{display:none;} .points{width:70px; font-size:13.5px;} .name{font-size:13.5px;}
     .term-body{padding:18px 16px 4px;} h1{font-size:22px;} .detail{padding-left:56px;}
@@ -125,6 +162,13 @@
     </div>
   </div>
   <footer><span class="sym">$</span> <span id="footerNote">loaded from data.json</span></footer>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalName">
+    <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
+    <div id="modalBody"></div>
+  </div>
 </div>
 
 <script>
@@ -223,21 +267,51 @@ function renderStats(){
 
 let currentSort = 'total';
 let currentQuery = '';
-let openKey = null;
 
 function medal(i){ if(i===0) return '\ud83e\udd47'; if(i===1) return '\ud83e\udd48'; if(i===2) return '\ud83e\udd49'; return ''; }
 function rankClass(i){ if(i===0) return 'top1'; if(i===1) return 'top2'; if(i===2) return 'top3'; return ''; }
 
-function buildDetailChart(r){
-  const scores = quizzes.filter(q => q in r.per_quiz).map(q => ({q, s:r.per_quiz[q]}));
-  if(scores.length===0) return '<div class="detail-label">No sessions recorded</div>';
-  const max = Math.max(...scores.map(x=>x.s), 1);
-  const bars = scores.map(x => {
-    const h = Math.max(2, Math.round((x.s/max)*60));
-    return `<div class="chart-bar" style="height:${h}px"><span class="tip">${x.q}: ${fmt(x.s)}</span></div>`;
+function openModal(r){
+  const overlay = document.getElementById('modalOverlay');
+  const globalOrder = results.slice().sort((a,b)=>b.total-a.total);
+  const globalIndex = globalOrder.findIndex(x=>x.official===r.official);
+
+  const rows = quizzes.map(q=>{
+    const has = q in r.per_quiz;
+    return `<tr class="${has?'':'missed'}"><td>${q}</td><td class="score-cell">${has ? fmt(r.per_quiz[q]) : '\u2014'}</td></tr>`;
   }).join('');
-  return `<div class="detail-label">Score per quiz — ${scores.length} played</div><div class="chart">${bars}</div>`;
+
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-head">
+      <span class="rank ${rankClass(globalIndex)}" style="width:auto">${medal(globalIndex)} #${globalIndex+1}</span>
+      <h2>${r.official}</h2>
+    </div>
+    <div class="modal-stats">
+      <div class="mstat"><div class="mval">${fmt(r.total)}</div><div class="mlbl">total points</div></div>
+      <div class="mstat"><div class="mval">${r.played}/${quizzes.length}</div><div class="mlbl">quizzes played</div></div>
+      <div class="mstat"><div class="mval">${r.podiums}</div><div class="mlbl">podium finishes</div></div>
+      <div class="mstat"><div class="mval">${fmt(r.avg)}</div><div class="mlbl">average score</div></div>
+    </div>
+    <table class="quiz-table">
+      <thead><tr><th>Quiz</th><th>Score</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+  overlay.classList.add('open');
+  document.getElementById('modalClose').focus();
 }
+
+function closeModal(){
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+document.getElementById('modalOverlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'modalOverlay') closeModal();
+});
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape') closeModal();
+});
 
 function renderList(){
   const list = document.getElementById('list');
@@ -251,10 +325,9 @@ function renderList(){
   list.innerHTML = filtered.map((r) => {
     const globalIndex = globalOrder.findIndex(x=>x.official===r.official);
     const pct = Math.max(4, Math.round((r.total/maxTotal)*100));
-    const isOpen = openKey === r.official;
     return `
-    <div class="row ${isOpen?'open':''}">
-      <button class="row-btn" data-key="${r.official.replace(/"/g,'&quot;')}" aria-expanded="${isOpen}">
+    <div class="row">
+      <button class="row-btn" data-key="${r.official.replace(/"/g,'&quot;')}">
         <span class="rank ${rankClass(globalIndex)}">${String(globalIndex+1).padStart(2,'0')}</span>
         <span class="medal">${medal(globalIndex)}</span>
         <span class="name-col">
@@ -268,15 +341,14 @@ function renderList(){
         <span class="points">${fmt(r.total)}</span>
         <span class="chev">\u25b8</span>
       </button>
-      <div class="detail">${isOpen ? buildDetailChart(r) : ''}</div>
     </div>`;
   }).join('');
 
   list.querySelectorAll('.row-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const key = btn.getAttribute('data-key');
-      openKey = (openKey === key) ? null : key;
-      renderList();
+      const r = results.find(x=>x.official===key);
+      if(r) openModal(r);
     });
   });
 }
