@@ -263,7 +263,7 @@ function renderList(){
         </span>
         <span class="meta">
           <span class="played">${r.played}/${quizzes.length} played</span>
-          <span class="podiums">${r.podiums ? '\u2605'.repeat(Math.min(r.podiums,3)) : '\u2014'}</span>
+          <span class="podiums">${r.podiums ? r.podiums + ' \u2605' : '\u2014'}</span>
         </span>
         <span class="points">${fmt(r.total)}</span>
         <span class="chev">\u25b8</span>
