@@ -159,6 +159,10 @@
     border:1px solid rgba(232,99,107,0.35); border-radius:4px; padding:2px 6px; margin-left:8px;
     vertical-align:middle;
   }
+  .status-badge.left{
+    color:var(--text-dim); background:rgba(124,136,150,0.14);
+    border:1px solid rgba(124,136,150,0.35);
+  }
   .team-member-points{font-family:var(--mono); font-size:12.5px; color:var(--text); flex-shrink:0;}
   @media (max-width:560px){
     .team-stats{gap:10px;}
@@ -337,7 +341,7 @@ function openModal(r){
   document.getElementById('modalBody').innerHTML = `
     <div class="modal-head">
       <span class="rank ${rankClass(globalIndex)}" style="width:auto">${medal(globalIndex)} #${globalIndex+1}</span>
-      <h2>${r.official}${r.status ? `<span class="status-badge">${r.status}</span>` : ''}</h2>
+      <h2>${r.official}${r.status ? `<span class="status-badge ${r.status==='Left'?'left':''}">${r.status}</span>` : ''}</h2>
     </div>
     <div class="modal-stats">
       <div class="mstat"><div class="mval">${fmt(r.total)}</div><div class="mlbl">total points</div></div>
@@ -384,7 +388,7 @@ function renderList(){
         <span class="rank ${rankClass(globalIndex)}">${String(globalIndex+1).padStart(2,'0')}</span>
         <span class="medal">${medal(globalIndex)}</span>
         <span class="name-col">
-          <span class="name">${r.official}${r.status ? `<span class="status-badge">${r.status}</span>` : ''}</span>
+          <span class="name">${r.official}${r.status ? `<span class="status-badge ${r.status==='Left'?'left':''}">${r.status}</span>` : ''}</span>
           <span class="bar-track"><span class="bar-fill" style="width:${pct}%"></span></span>
         </span>
         <span class="meta">
@@ -428,7 +432,7 @@ function renderTeams(){
       return `
       <div class="team-member-row">
         <span class="team-member-rank">${mi+1}</span>
-        <span class="team-member-name ${zero?'zero':''}">${m.official}${zero?' (no record yet)':''}${m.status ? `<span class="status-badge">${m.status}</span>` : ''}</span>
+        <span class="team-member-name ${zero?'zero':''}">${m.official}${zero?' (no record yet)':''}${m.status ? `<span class="status-badge ${m.status==='Left'?'left':''}">${m.status}</span>` : ''}</span>
         <span class="team-member-points">${fmt(m.total)}</span>
       </div>`;
     }).join('');
