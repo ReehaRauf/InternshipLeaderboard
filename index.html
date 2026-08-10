@@ -153,6 +153,12 @@
   .team-member-rank{font-family:var(--mono); font-size:11px; color:var(--text-faint); width:20px; flex-shrink:0;}
   .team-member-name{font-family:var(--sans); font-size:13.5px; color:var(--text); flex:1;}
   .team-member-name.zero{color:var(--text-faint); font-style:italic;}
+  .status-badge{
+    font-family:var(--mono); font-size:9.5px; font-weight:600; text-transform:uppercase;
+    letter-spacing:0.03em; color:var(--red); background:rgba(232,99,107,0.12);
+    border:1px solid rgba(232,99,107,0.35); border-radius:4px; padding:2px 6px; margin-left:8px;
+    vertical-align:middle;
+  }
   .team-member-points{font-family:var(--mono); font-size:12.5px; color:var(--text); flex-shrink:0;}
   @media (max-width:560px){
     .team-stats{gap:10px;}
@@ -271,6 +277,7 @@ function parseWideRows(rows){
   const idx = {}; fixedCols.forEach(c=> idx[c] = header.indexOf(c));
   if(Object.values(idx).some(v=>v===-1)) throw new Error('missing expected columns');
   const teamIdx = header.indexOf('Team'); // optional column
+  const statusIdx = header.indexOf('Status'); // optional column
   const quizStart = header.indexOf('Podium Finishes') + 1;
   const quizList = header.slice(quizStart).filter(h=>h);
   const resultsArr = [];
@@ -285,6 +292,7 @@ function parseWideRows(rows){
     resultsArr.push({
       official: row[idx['Intern']],
       team: teamIdx>-1 ? (row[teamIdx]||'') : '',
+      status: statusIdx>-1 ? (row[statusIdx]||'') : '',
       total: Number(row[idx['Total Points']])||0,
       played: Number(row[idx['Quizzes Played']])||0,
       avg: Number(row[idx['Average Score']])||0,
@@ -329,7 +337,7 @@ function openModal(r){
   document.getElementById('modalBody').innerHTML = `
     <div class="modal-head">
       <span class="rank ${rankClass(globalIndex)}" style="width:auto">${medal(globalIndex)} #${globalIndex+1}</span>
-      <h2>${r.official}</h2>
+      <h2>${r.official}${r.status ? `<span class="status-badge">${r.status}</span>` : ''}</h2>
     </div>
     <div class="modal-stats">
       <div class="mstat"><div class="mval">${fmt(r.total)}</div><div class="mlbl">total points</div></div>
@@ -376,7 +384,7 @@ function renderList(){
         <span class="rank ${rankClass(globalIndex)}">${String(globalIndex+1).padStart(2,'0')}</span>
         <span class="medal">${medal(globalIndex)}</span>
         <span class="name-col">
-          <span class="name">${r.official}</span>
+          <span class="name">${r.official}${r.status ? `<span class="status-badge">${r.status}</span>` : ''}</span>
           <span class="bar-track"><span class="bar-fill" style="width:${pct}%"></span></span>
         </span>
         <span class="meta">
@@ -420,7 +428,7 @@ function renderTeams(){
       return `
       <div class="team-member-row">
         <span class="team-member-rank">${mi+1}</span>
-        <span class="team-member-name ${zero?'zero':''}">${m.official}${zero?' (no record yet)':''}</span>
+        <span class="team-member-name ${zero?'zero':''}">${m.official}${zero?' (no record yet)':''}${m.status ? `<span class="status-badge">${m.status}</span>` : ''}</span>
         <span class="team-member-points">${fmt(m.total)}</span>
       </div>`;
     }).join('');
