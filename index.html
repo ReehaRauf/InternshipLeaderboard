@@ -132,11 +132,11 @@
 
   /* teams view */
   .team-note{
-    font-family:var(--mono); font-size:11.5px; color:var(--text-dim); line-height:1.5;
-    background:var(--bg); border:1px solid var(--border-soft); border-radius:8px;
+    font-family:var(--sans); font-size:12.5px; color:var(--text); line-height:1.5;
+    background:rgba(232,99,107,0.08); border:1px solid rgba(232,99,107,0.4); border-radius:8px;
     padding:10px 12px; margin-bottom:16px;
   }
-  .team-note .sym{color:var(--amber);}
+  .team-note b{color:var(--red); font-weight:700;}
   .team-card{
     background:var(--bg); border:1px solid var(--border-soft); border-radius:10px;
     margin-bottom:14px; overflow:hidden;
@@ -215,7 +215,7 @@
 
       <div class="panel" id="panel-teams">
         <div class="team-note">
-          <span class="sym">$</span> Team score = sum of every member's total points. Teams have different member counts, so this favors larger teams — not a fully fair comparison yet.
+          <b>Disclaimer:</b> These team rankings are not final. Team sizes vary, so standings may change as this gets adjusted for fairness.
         </div>
         <div class="list" id="teamsList"></div>
       </div>
