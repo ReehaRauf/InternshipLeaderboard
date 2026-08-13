@@ -131,6 +131,12 @@
   .quiz-table .score-cell{text-align:right; font-weight:600;}
 
   /* teams view */
+  .team-note{
+    font-family:var(--mono); font-size:11.5px; color:var(--text-dim); line-height:1.5;
+    background:var(--bg); border:1px solid var(--border-soft); border-radius:8px;
+    padding:10px 12px; margin-bottom:16px;
+  }
+  .team-note .sym{color:var(--amber);}
   .team-card{
     background:var(--bg); border:1px solid var(--border-soft); border-radius:10px;
     margin-bottom:14px; overflow:hidden;
@@ -185,7 +191,7 @@
     </div>
     <div class="term-body">
       <h1>Intern Leaderboard</h1>
-      <p class="subtitle">Last updated <strong>August 12, 2026</strong></p>
+      <p class="subtitle">Last updated <strong>August 13, 2026</strong></p>
 
       <div class="tabs" role="tablist">
         <button class="tab" role="tab" aria-selected="true" data-panel="leaderboard">individual</button>
@@ -208,6 +214,9 @@
       </div>
 
       <div class="panel" id="panel-teams">
+        <div class="team-note">
+          <span class="sym">$</span> Team score = sum of every member's total points. Teams have different member counts, so this favors larger teams — not a fully fair comparison yet.
+        </div>
         <div class="list" id="teamsList"></div>
       </div>
 
