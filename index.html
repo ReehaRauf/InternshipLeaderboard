@@ -222,7 +222,6 @@
 
     </div>
   </div>
-  <footer><span class="sym">$</span> <span id="footerNote">loaded from data.json</span></footer>
 </div>
 
 <div class="modal-overlay" id="modalOverlay">
@@ -255,7 +254,6 @@ async function loadInitialData(){
 function applyData(d, sourceLabel){
   results = d.results;
   quizzes = d.quizzes;
-  document.getElementById('footerNote').textContent = 'loaded from ' + sourceLabel + ' \u00b7 snapshot, not live';
   renderAll();
 }
 
@@ -423,8 +421,8 @@ function renderTeams(){
 
   const byTeam = {};
   results.forEach(r=>{
-    const t = r.team || 'Unassigned';
-    (byTeam[t] = byTeam[t] || []).push(r);
+    if(!r.team) return;
+    (byTeam[r.team] = byTeam[r.team] || []).push(r);
   });
 
   const teamSummaries = Object.entries(byTeam).map(([team, members])=>{
