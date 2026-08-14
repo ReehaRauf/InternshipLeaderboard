@@ -43,6 +43,19 @@
   .subtitle strong{color:var(--text);}
 
   .tabs{display:flex; gap:4px; margin-bottom:20px; border-bottom:1px solid var(--border-soft);}
+  .scope-toggle{
+    display:flex; align-items:center; gap:8px; margin:-10px 0 18px;
+    font-family:var(--mono); font-size:11.5px; color:var(--text-dim);
+  }
+  .scope-toggle .sym{color:var(--green);}
+  .scope-toggle button{
+    font-family:var(--mono); font-size:11.5px; color:var(--text-dim);
+    background:var(--bg); border:1px solid var(--border); border-radius:6px;
+    padding:5px 11px; cursor:pointer;
+  }
+  .scope-toggle button[aria-pressed="true"]{color:var(--red); border-color:rgba(232,99,107,0.45); background:rgba(232,99,107,0.08);}
+  .scope-toggle button:hover{color:var(--text);}
+  .scope-toggle button:focus-visible{outline:2px solid var(--blue); outline-offset:2px;}
   .tab{font-family:var(--mono); font-size:12.5px; color:var(--text-dim); background:transparent; border:0; padding:10px 16px; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px;}
   .tab[aria-selected="true"]{color:var(--green); border-bottom-color:var(--green);}
   .tab:focus-visible{outline:2px solid var(--blue); outline-offset:2px;}
@@ -198,6 +211,11 @@
         <button class="tab" role="tab" aria-selected="false" data-panel="teams">teams</button>
       </div>
 
+      <div class="scope-toggle">
+        <span class="sym">$</span>
+        <button id="scopeBtn" type="button" aria-pressed="false">show removed / left</button>
+      </div>
+
       <div class="panel active" id="panel-leaderboard">
         <div class="stat-row" id="statRow"></div>
         <div class="controls">
@@ -239,17 +257,28 @@ let quizzes = [];
 function fmt(n){ return Math.round(n).toLocaleString('en-US'); }
 
 /* ---------- data loading ---------- */
-async function loadInitialData(){
+let showRemoved = false;
+
+async function loadData(){
+  const file = showRemoved ? 'data.csv' : 'data_active.csv';
   try{
-    const res = await fetch('data_active.csv', {cache:'no-store'});
-    if(!res.ok) throw new Error('no data_active.csv');
+    const res = await fetch(file, {cache:'no-store'});
+    if(!res.ok) throw new Error('no ' + file);
     const text = await res.text();
     const d = parseWideCSV(text);
-    applyData(d, 'data_active.csv');
+    applyData(d, file);
   }catch(e){
-    applyData({results:[], quizzes:[]}, 'error \u2014 could not load data_active.csv');
+    applyData({results:[], quizzes:[]}, 'error \u2014 could not load ' + file);
   }
 }
+
+document.getElementById('scopeBtn').addEventListener('click', ()=>{
+  showRemoved = !showRemoved;
+  document.getElementById('scopeBtn').setAttribute('aria-pressed', String(showRemoved));
+  document.getElementById('scopeBtn').textContent = showRemoved ? 'hide removed / left' : 'show removed / left';
+  loadData();
+});
+
 
 function applyData(d, sourceLabel){
   results = d.results;
@@ -429,7 +458,7 @@ function renderTeams(){
     const total = members.reduce((s,m)=>s+m.total,0);
     const avg = members.length ? total/members.length : 0;
     return { team, members: members.slice().sort((a,b)=>b.total-a.total), total, avg };
-  }).sort((a,b)=>b.total-a.total);
+  }).sort((a,b)=>b.avg-a.avg);
 
   container.innerHTML = teamSummaries.map((t, ti)=>{
     const memberRows = t.members.map((m, mi)=>{
@@ -484,7 +513,7 @@ document.querySelectorAll('.sort-tabs button').forEach(btn=>{
   });
 });
 
-loadInitialData();
+loadData();
 </script>
 </body>
 </html>
